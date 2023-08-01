@@ -92,6 +92,20 @@ statistics()->withTablePrefix('custom_prefix_'); // Will result in 'custom_prefi
 
 No config file needed.
 
+### Scheduler
+
+This package comes with a Job that should run daily at 00:00.
+
+```php
+// Inside your App\Console\Kernel.php
+
+use \Devront\AdvancedStatistics\Jobs\CalculateStatisticsJob;
+
+$schedule->job(CalculateStatisticsJob::class)
+            ->dailyAt('0:0')
+            ->onOneServer();
+```
+
 ## Usage
 
 First you need to define a class for your statistics
@@ -190,6 +204,14 @@ Available methods for chaining your query are:
     ->for($user)
     ->forCountryCode(null)
     ->get();
+```
+
+### IDE Autocompletion of magic methods
+
+This package comes with a command to generate a _ide_helper_statistics.php file for better autocompletion when chaining magic methods like forCountryCode() in the example above:
+
+```bash
+php artisan ide-helper:advanced-statistics
 ```
 
 ## Configuration
