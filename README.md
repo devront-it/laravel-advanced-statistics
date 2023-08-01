@@ -1,9 +1,7 @@
 # Laravel Advanced Statistics (no UI)
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
-[![GitHub Tests Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/run-tests.yml?branch=main&label=tests&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3Arun-tests+branch%3Amain)
-[![GitHub Code Style Action Status](https://img.shields.io/github/actions/workflow/status/:vendor_slug/:package_slug/fix-php-code-style-issues.yml?branch=main&label=code%20style&style=flat-square)](https://github.com/:vendor_slug/:package_slug/actions?query=workflow%3A"Fix+PHP+code+style+issues"+branch%3Amain)
-[![Total Downloads](https://img.shields.io/packagist/dt/:vendor_slug/:package_slug.svg?style=flat-square)](https://packagist.org/packages/:vendor_slug/:package_slug)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/devront-it/laravel-advanced-statistics.svg?style=flat-square)](https://packagist.org/packages/devront-it/laravel-advanced-statistics)
+[![Total Downloads](https://img.shields.io/packagist/dt/devront-it/laravel-advanced-statistics.svg?style=flat-square)](https://packagist.org/packages/devront-it/laravel-advanced-statistics)
 
 I hate to think about statistics everytime I start a new project. That's why - in my applications - the Dashboard is the
 last thing that gets filled. What I needed was a simple API where I can define, increment, count and clean up statistics
