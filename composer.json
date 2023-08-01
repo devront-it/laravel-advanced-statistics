@@ -2,10 +2,10 @@
     "name": "devront-it/laravel-advanced-statistics",
     "version": "0.1.0",
     "description": "Statistics API for Laravel",
+    "license": "MIT",
     "keywords": [
         "Laravel",
-        "Statistics",
-        "Livewire"
+        "Statistics"
     ],
     "require": {
         "php": "^8.1",
