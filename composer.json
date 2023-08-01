@@ -1,5 +1,6 @@
 {
     "name": "devront-it/laravel-advanced-statistics",
+    "version": "0.1.0",
     "description": "API for Statistics with some UI niceties for Laravel+Livewire.",
     "keywords": [
         "Laravel",

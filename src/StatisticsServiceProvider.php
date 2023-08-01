@@ -14,7 +14,7 @@ class StatisticsServiceProvider extends PackageServiceProvider
     public function configurePackage(Package $package): void
     {
         $package
-            ->name('statistics')
+            ->name('advanced-statistics')
             ->hasViews()
             ->hasCommands(
                 AdvancedStatisticsRunCommand::class,
