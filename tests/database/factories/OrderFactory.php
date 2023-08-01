@@ -1,6 +1,6 @@
 <?php
 
-namespace Devront\AdvancedStatistics\Tests\database\factories;
+namespace Devront\AdvancedStatistics\Tests\Database\Factories;
 
 use Devront\AdvancedStatistics\Tests\Models\Order;
 use Devront\AdvancedStatistics\Tests\Models\User;
