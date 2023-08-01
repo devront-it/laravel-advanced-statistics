@@ -1,0 +1,62 @@
+{
+    "name": "devront-it/laravel-advanced-statistics",
+    "description": "API for Statistics with some UI niceties for Laravel+Livewire.",
+    "keywords": [
+        "Laravel",
+        "Statistics",
+        "Livewire"
+    ],
+    "require": {
+        "php": "^8.1",
+        "laravel/framework": "^10.0",
+        "livewire/livewire": "^3.0",
+        "spatie/laravel-package-tools": "1.15.0"
+    },
+    "require-dev": {
+        "nette/php-generator": "^4.0",
+        "orchestra/testbench": "^8.0",
+        "pestphp/pest": "^2.0",
+        "pestphp/pest-plugin-arch": "^2.0",
+        "pestphp/pest-plugin-laravel": "^2.0",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Devront\\AdvancedStatistics\\": "src/"
+        },
+        "files": [
+            "src/helpers.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Devront\\AdvancedStatistics\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Devront\\AdvancedStatistics\\StatisticsServiceProvider"
+            ]
+        },
+        "npm": {
+        }
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "post-install-cmd": [
+        "npm install"
+    ],
+    "post-update-cmd": [
+        "npm install"
+    ]
+}
