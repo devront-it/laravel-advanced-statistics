@@ -33,6 +33,6 @@ return new class extends Migration {
 
     public function down()
     {
-        Schema::dropIfExists(app(AdvancedStatistics::class)->isUsingUuids());
+        Schema::dropIfExists(app(AdvancedStatistics::class)->getTableName());
     }
 };
