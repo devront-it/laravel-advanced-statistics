@@ -20,7 +20,7 @@ return new class extends Migration {
                 $table->morphs('owner');
             }
 
-            $table->tinyInteger('type');
+            $table->string('type');
             $table->string('timeframe');
             $table->float('value', 10, 2)->default(0);
             $table->date('from_date');
