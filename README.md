@@ -2,6 +2,7 @@
 
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/devront-it/laravel-advanced-statistics.svg?style=flat-square)](https://packagist.org/packages/devront-it/laravel-advanced-statistics)
 [![Total Downloads](https://img.shields.io/packagist/dt/devront-it/laravel-advanced-statistics.svg?style=flat-square)](https://packagist.org/packages/devront-it/laravel-advanced-statistics)
+![Tests](https://github.com/github/docs/actions/workflows/test.yml/badge.svg)
 
 I hate to think about statistics everytime I start a new project. That's why - in my applications - the Dashboard is the
 last thing that gets filled. What I needed was a simple API where I can define, increment, count and clean up statistics
