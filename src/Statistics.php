@@ -5,6 +5,8 @@ namespace Devront\AdvancedStatistics;
 use Devront\AdvancedStatistics\Attributes\AdvancedStatisticsAttribute;
 use Devront\AdvancedStatistics\Attributes\Avg;
 use Devront\AdvancedStatistics\Attributes\Param;
+use Devront\AdvancedStatistics\Models\Statistic;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
@@ -125,7 +127,10 @@ class Statistics
         return $this->baseQuery()->sum('value');
     }
 
-    public function getEntries()
+    /**
+     * @return Collection<Statistic>
+     */
+    public function getEntries(): Collection
     {
         return $this->baseQuery()->get();
     }
