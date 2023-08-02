@@ -15,7 +15,7 @@ class Statistics
     private $keep_monthly_statistics_for_months = 24;
 
     private string $type;
-    private string|int|null $owner_id = null;
+    private string|int|array|null $owner_id = null;
     private string|null $owner_type = null;
     private Carbon|null $from_date = null;
     private Carbon|null $to_date = null;
@@ -31,12 +31,13 @@ class Statistics
         $this->initSetters();
     }
 
-    public function for(Model|string $owner): self
+    public function for(Model|string $owner, array|null $ids = null): self
     {
         if (is_string($owner)) {
             $this->owner_type = class_exists($owner)
                 ? (new $owner)->getMorphClass()
                 : $owner;
+            $this->owner_id = $ids;
         } else {
             $this->owner_id = $owner->getKey();
             $this->owner_type = $owner->getMorphClass();
@@ -133,7 +134,13 @@ class Statistics
     {
         $query = app(AdvancedStatistics::class)->getModelClass()::query()
             ->when($this->owner_type, fn($q) => $q->where('owner_type', $this->owner_type))
-            ->when($this->owner_id, fn($q) => $q->where('owner_id', $this->owner_id))
+            ->when(!is_null($this->owner_id), function ($q) {
+                if (is_array($this->owner_id)) {
+                    $q->whereIn('owner_id', $this->owner_id);
+                } else {
+                    $q->where('owner_id', $this->owner_id);
+                }
+            })
             ->when($this->from_date, fn($q) => $q->whereDate('from_date', '>=', $this->from_date))
             ->when($this->to_date, fn($q) => $q->whereDate('to_date', '<=', $this->to_date));
 
