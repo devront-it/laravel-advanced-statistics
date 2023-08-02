@@ -147,6 +147,7 @@ class Statistics
                 $total_avg += $stat->payload['avg'][$avg_name] * $stat->value;
             }
         }
+        if ($total_items === 0) return 0;
         return round($total_avg / $total_items, $places);
     }
 
