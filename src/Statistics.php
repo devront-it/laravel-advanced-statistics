@@ -122,6 +122,11 @@ class Statistics
         return $this->baseQuery()->sum('value');
     }
 
+    public function getEntries()
+    {
+        return $this->baseQuery()->get();
+    }
+
     private function baseQuery()
     {
         $query = app(AdvancedStatistics::class)->getModelClass()::query()
