@@ -22,6 +22,8 @@ class Statistics
 
     private array $params = [];
     private array $averages = [];
+    private array $params_values = [];
+    private array $averages_values = [];
 
     public function __construct()
     {
@@ -59,7 +61,7 @@ class Statistics
         // Avg
         foreach ($this->averages as $average) {
             throw_unless(
-                isset($this->{$average}) && is_numeric($this->{$average}),
+                isset($this->averages_values[$average]) && is_numeric($this->averages_values[$average]),
                 new \Exception($average . ' average must be set and numeric before hitting the stats.')
             );
         }
@@ -73,7 +75,7 @@ class Statistics
             ->whereDate('to_date', now()->endOfDay())
             ->where(function ($q) {
                 foreach ($this->params as $param) {
-                    $q->where("payload->$param", $this->{$param} ?? null);
+                    $q->where("payload->$param", $this->params_values[$param] ?? null);
                 }
             });
 
@@ -89,7 +91,7 @@ class Statistics
             foreach ($this->averages as $average) {
                 if (!isset($payload['avg'])) $payload['avg'] = [];
                 $old_avg = $payload['avg'][$average] ?? 0;
-                $new_avg = (($old_avg * $old_items_count) + ($this->{$average} * $value)) / $new_items_count;
+                $new_avg = (($old_avg * $old_items_count) + ($this->averages_values[$average] * $value)) / $new_items_count;
                 $payload['avg'][$average] = $new_avg;
             }
             $stats->payload = $payload;
@@ -98,11 +100,11 @@ class Statistics
         } else {
             $payload = [];
             foreach ($this->params as $param) {
-                $payload[$param] = $this->{$param} ?? null;
+                $payload[$param] = $this->params_values[$param] ?? null;
             }
             foreach ($this->averages as $average) {
                 if (!isset($payload['avg'])) $payload['avg'] = [];
-                $payload['avg'][$average] = $this->{$average};
+                $payload['avg'][$average] = $this->averages_values[$average];
             }
             app(AdvancedStatistics::class)->getModelClass()::create([
                 'timeframe' => 'd',
@@ -136,8 +138,12 @@ class Statistics
             ->when($this->to_date, fn($q) => $q->whereDate('to_date', '<=', $this->to_date));
 
         foreach ($this->params as $param) {
-            $value = $this->{$param} ?? null;
-            $query->when(isset($this->{$param}), fn($q) => $q->where("payload->$param", $value));
+            $value = $this->params_values[$param] ?? null;
+            if (is_array($value)) {
+                $query->when(isset($this->params_values[$param]), fn($q) => $q->whereIn("payload->$param", $value));
+            } else {
+                $query->when(isset($this->params_values[$param]), fn($q) => $q->where("payload->$param", $value));
+            }
         }
         return $query;
     }
@@ -218,13 +224,13 @@ class Statistics
                 $avg_name = Str::snake($method);
                 $value = $params[0];
                 if (!is_numeric($value)) throw new \Exception('The value for Avg attributes must be numeric.');
-                $this->{$avg_name} = $value;
+                $this->averages_values[$avg_name] = $value;
                 return $this;
             } else if (Str::startsWith($method, 'for')) {
                 $param = Str::snake(Str::after($method, 'for'));
                 if (in_array($param, $this->params)) {
                     if (count($params) === 1) {
-                        $this->{$param} = $params[0]; // Can be array
+                        $this->params_values[$param] = $params[0]; // Can be array
                         return $this;
                     } else {
                         throw new \Exception($method . '() expects one argument, ' . count($params) . ' passed.');

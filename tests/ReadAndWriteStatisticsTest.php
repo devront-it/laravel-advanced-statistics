@@ -33,6 +33,12 @@ it('can hit and get statistics with params', function () {
         ->hit(3);
 
     $statistics = new OrderStatistics();
+    $total_orders_for_germany_and_france = $statistics
+        ->for($user)
+        ->forCountry(['de', 'fr'])
+        ->get();
+
+    $statistics = new OrderStatistics();
     $total_orders_for_user_for_source_in_germany = $statistics
         ->for($user)
         ->forSource('source 1')
@@ -49,6 +55,7 @@ it('can hit and get statistics with params', function () {
     $total_orders = $statistics
         ->get();
 
+    expect($total_orders_for_germany_and_france)->toBe(6.0);
     expect($total_orders_for_user_for_source_1_in_all_countries)->toBe(6.0);
     expect($total_orders)->toBe(9.0);
     expect($total_orders_for_user_for_source_in_germany)->toBe(3.0);
