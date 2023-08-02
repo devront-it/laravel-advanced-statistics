@@ -3,6 +3,7 @@
 namespace Devront\AdvancedStatistics;
 
 use Devront\AdvancedStatistics\Attributes\AdvancedStatisticsAttribute;
+use Devront\AdvancedStatistics\Attributes\Avg;
 use Devront\AdvancedStatistics\Attributes\Param;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -20,6 +21,7 @@ class Statistics
     private Carbon|null $to_date = null;
 
     private array $params = [];
+    private array $averages = [];
 
     public function __construct()
     {
@@ -54,6 +56,14 @@ class Statistics
 
     public function hit(int|float $value = 1)
     {
+        // Avg
+        foreach ($this->averages as $average) {
+            throw_unless(
+                isset($this->{$average}) && is_numeric($this->{$average}),
+                new \Exception($average . ' average must be set and numeric before hitting the stats.')
+            );
+        }
+
         $query = app(AdvancedStatistics::class)->getModelClass()::query()
             ->where('timeframe', 'd')
             ->where('type', $this->type)
@@ -70,11 +80,29 @@ class Statistics
         $stats = $query->first();
 
         if ($stats) {
-            $stats->increment('value', $value);
+            $old_items_count = $stats->value;
+            $stats->value += $value;
+            $new_items_count = $stats->value;
+
+            // Avg
+            $payload = $stats->payload;
+            foreach ($this->averages as $average) {
+                if (!isset($payload['avg'])) $payload['avg'] = [];
+                $old_avg = $payload['avg'][$average] ?? 0;
+                $new_avg = (($old_avg * $old_items_count) + ($this->{$average} * $value)) / $new_items_count;
+                $payload['avg'][$average] = $new_avg;
+            }
+            $stats->payload = $payload;
+
+            $stats->save();
         } else {
             $payload = [];
             foreach ($this->params as $param) {
                 $payload[$param] = $this->{$param} ?? null;
+            }
+            foreach ($this->averages as $average) {
+                if (!isset($payload['avg'])) $payload['avg'] = [];
+                $payload['avg'][$average] = $this->{$average};
             }
             app(AdvancedStatistics::class)->getModelClass()::create([
                 'timeframe' => 'd',
@@ -91,6 +119,11 @@ class Statistics
 
     public function get()
     {
+        return $this->baseQuery()->sum('value');
+    }
+
+    private function baseQuery()
+    {
         $query = app(AdvancedStatistics::class)->getModelClass()::query()
             ->when($this->owner_type, fn($q) => $q->where('owner_type', $this->owner_type))
             ->when($this->owner_id, fn($q) => $q->where('owner_id', $this->owner_id))
@@ -101,8 +134,20 @@ class Statistics
             $value = $this->{$param} ?? null;
             $query->when(isset($this->{$param}), fn($q) => $q->where("payload->$param", $value));
         }
+        return $query;
+    }
 
-        return $query->sum('value');
+    private function getAverageFor($avg_name, $places = 2)
+    {
+        $total_items = 0;
+        $total_avg = 0;
+        foreach ($this->baseQuery()->get() as $stat) {
+            if (isset($stat->payload['avg'][$avg_name])) {
+                $total_items += $stat->value;
+                $total_avg += $stat->payload['avg'][$avg_name] * $stat->value;
+            }
+        }
+        return round($total_avg / $total_items, $places);
     }
 
     private function initMetadata()
@@ -125,34 +170,59 @@ class Statistics
         $reflectionClass = new \ReflectionClass($this);
         $classProperties = $reflectionClass->getProperties();
 
-        $reserved = ['owner_id', 'owner_type', 'from_date', 'to_date', 'params', 'type'];
+        $reserved = ['owner_id', 'owner_type', 'from_date', 'to_date', 'params', 'type', 'averages'];
 
         foreach ($classProperties as $property) {
-            $attributes = $property->getAttributes(Param::class);
+            $param_attributes = $property->getAttributes(Param::class);
 
-            if (!empty($attributes)) {
+            if (!empty($param_attributes)) {
                 $name = strtolower(Str::snake($property->getName()));
                 if (in_array($name, $reserved)) {
                     throw new \Exception(join(', ', $reserved) . ' are reserved for internal use and can not be used as statistics params.');
                 }
                 $this->params[] = $name;
+            } else {
+                $avg_attributes = $property->getAttributes(Avg::class);
+                if (!empty($avg_attributes)) {
+                    $name = strtolower(Str::snake($property->getName()));
+                    if (in_array($name, $reserved)) {
+                        throw new \Exception(join(', ', $reserved) . ' are reserved for internal use and can not be used as statistics avg.');
+                    }
+                    $this->averages[] = $name;
+                }
             }
         }
         usort($this->params, function ($a, $b) {
+            return strnatcmp($a, $b);
+        });
+        usort($this->averages, function ($a, $b) {
             return strnatcmp($a, $b);
         });
     }
 
     public function __call($method, $params)
     {
-        if (Str::startsWith($method, 'for')) {
-            $param = Str::snake(Str::after($method, 'for'));
-            if (in_array($param, $this->params)) {
-                if (count($params) === 1) {
-                    $this->{$param} = $params[0]; // Can be array
-                    return $this;
-                } else {
-                    throw new \Exception($method . '() expects one argument, ' . count($params) . ' passed.');
+        if (Str::startsWith($method, 'getAverage')) {
+            $avg_name = Str::snake(Str::after($method, 'getAverage'));
+            if (in_array($avg_name, $this->averages)) {
+                return $this->getAverageFor($avg_name, isset($params[0]) ? $params[0] : 2);
+            }
+        } else {
+            if (in_array(Str::snake($method), $this->averages)) {
+                $avg_name = Str::snake($method);
+                $value = $params[0];
+                if (!is_numeric($value)) throw new \Exception('The value for Avg attributes must be numeric.');
+                $this->{$avg_name} = $value;
+                return $this;
+            } else if (Str::startsWith($method, 'for')) {
+                $param = Str::snake(Str::after($method, 'for'));
+                if (in_array($param, $this->params)) {
+                    if (count($params) === 1) {
+                        $this->{$param} = $params[0]; // Can be array
+                        return $this;
+                    } else {
+                        throw new \Exception($method . '() expects one argument, ' . count($params) . ' passed.');
+                    }
                 }
             }
         }
@@ -176,5 +246,10 @@ class Statistics
     public function getParams()
     {
         return $this->params;
+    }
+
+    public function getAverages()
+    {
+        return $this->averages;
     }
 }

@@ -14,59 +14,24 @@ Key features:
 * Define how long you would like to keep daily and monthly statistics
 * Cleanup: Daily statistics are automatically accumulated into monthly statistics
 * Simply query your statistics with magic methods (ide helper generator included)
+* Calculate averages
 
-### Show me the code!
+How it works
 
-```php
-// This is how you define your statistics.
-// Let's say you want to count orders - but you want niceties, such as:
-// How many orders did I ship to Germany?
-// What is the most used payment method?
-// What is the preferred payment method for orders from Germany?
+This package does not just rely on counting models. An example: I don't want to know how many orders I have in my
+database. You really wouldn't need a package for that. What I need to know is:
 
-use Devront\AdvancedStatistics\Attributes\AdvancedStatisticsAttribute;
-use Devront\AdvancedStatistics\Attributes\Param;
-use Devront\AdvancedStatistics\Statistics;
+* How many orders did I have from country x?
+* How long did my fulfillment provider need to fulfill my orders in average?
+* Combination of both: How many hours did my German fulfillment provider need in average to fulfill orders during peek
+  time in November compared to my fulfillment provider in Spain?
+* This list can go on...
 
-#[AdvancedStatisticsAttribute(
-    type: 'orders',
-    keepDailyStatisticsForDays: 90,
-    keepMonthlyStatisticsForMonths: 24
-)]
-class OrderStatistics extends Statistics 
-{
-    #[Param]
-    public string $country_code;
-    
-    #[Param]
-    public string $payment_method;
-}
+Some of those queries can be really expensive. That's why this package stores everything in its own database table. It
+separates daily from monthly statistics and merges both automatically after x days, which can be configured for every
+statistic. It also cleans up stats after a pre-defined timeframe.
 
-
-// Now let's count it up:
-(new OrderStatistics)
-    ->for($user) // The owner model. Can be null of course
-    ->forCountryCode('de') // Now simply chain your params
-    ->forPaymentMethod('paypal')
-    ->hit(1); // Default is 1.
-
-// Let's get how many orders we had this month from Germany:
-(new OrderStatistics)
-    ->for($user)
-    ->forCountryCode('de')
-    ->from(now()->startOfMonth())
-    ->get();
-    
-// Let's get how many orders from Spain have been paid with paypal last month
-(new OrderStatistics)
-    ->for($user)
-    ->forCountryCode('es')
-    ->forPaymentMethod('paypal')
-    ->from(now()->subMonth()->startOfMonth())
-    ->to(now()->submonth()->endOfMonth())
-    ->get();
-
-```
+Maybe one day I'll make some Livewire components that utilize this package to provide a UI.
 
 ## Installation
 
@@ -133,10 +98,10 @@ use Devront\AdvancedStatistics\Statistics;
 class OrderStatistics extends Statistics 
 {
     #[Param]
-    public string $country_code;
+    protected string $country_code;
     
     #[Param]
-    public string $payment_method;
+    protected string $payment_method;
 }
 ```
 
@@ -162,10 +127,10 @@ use Devront\AdvancedStatistics\Statistics;
 class OrderStatistics extends Statistics 
 {
     #[Param]
-    public string $country_code;
+    protected string $country_code;
     
     #[Param]
-    public string $payment_method;
+    protected string $payment_method;
 }
 ```
 
@@ -207,9 +172,57 @@ Available methods for chaining your query are:
     ->get();
 ```
 
+### Averages
+
+Statistic Class config:
+
+```php
+use Devront\AdvancedStatistics\Attributes\Avg;
+
+#[AdvancedStatisticsAttribute]
+class OrderStatistics extends Statistics 
+{
+    // ...other params
+    
+    /**
+    * How many hours passed between ordered and shipped
+    */
+    #[Avg]
+    protected float $time_to_fulfill;
+}
+```
+
+Usage:
+
+```php
+(new OrderStatistics)
+    ->for($user)
+    ->timeToFulfill(2.5)
+    // ... maybe other params
+    ->hit();
+
+(new OrderStatistics)
+    ->for($user)
+    ->timeToFulfill(4)
+    // ... maybe other params
+    ->hit();
+
+// Get the average, returns 3.25
+$average = (new OrderStatistics)
+                ->for($user)
+                ->from(now()->startOfYear())
+                // ... maybe other params
+                ->getAverageTimeToFulfill(); // Takes decimal places as argument, default = 2
+                // ->getAverageTimeToFulfill(1); would return the value rounded to one place: 3.3
+
+```
+
+*Note:* If your Statistic Class contains a ``#[Avg]`` value, you must always provide it before ``->hit()`` the stats.
+
 ### IDE Autocompletion of magic methods
 
-This package comes with a command to generate a _ide_helper_statistics.php file for better autocompletion when chaining magic methods like forCountryCode() in the example above:
+This package comes with a command to generate a _ide_helper_statistics.php file for better autocompletion when chaining
+magic methods like forCountryCode() in the example above:
 
 ```bash
 php artisan ide-helper:advanced-statistics
@@ -219,7 +232,8 @@ php artisan ide-helper:advanced-statistics
 
 ### Using uuids
 
-If you are using uuids, make sure to put this inside the boot method of your AppServiceProvider BEFORE running the migration:
+If you are using uuids, make sure to put this inside the boot method of your AppServiceProvider BEFORE running the
+migration:
 
 ```php
 statistics()->useUuids();

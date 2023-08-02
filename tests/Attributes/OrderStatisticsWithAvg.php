@@ -3,6 +3,7 @@
 namespace Devront\AdvancedStatistics\Tests\Attributes;
 
 use Devront\AdvancedStatistics\Attributes\AdvancedStatisticsAttribute;
+use Devront\AdvancedStatistics\Attributes\Avg;
 use Devront\AdvancedStatistics\Attributes\Param;
 use Devront\AdvancedStatistics\Statistics;
 
@@ -14,11 +15,14 @@ use Devront\AdvancedStatistics\Statistics;
 /**
  * @method self forSource() forSource(string $value)
  */
-class OrderStatistics extends Statistics
+class OrderStatisticsWithAvg extends Statistics
 {
     #[Param]
     protected string $source;
 
     #[Param]
     protected string $country;
+
+    #[Avg]
+    protected float $time_to_fulfill;
 }

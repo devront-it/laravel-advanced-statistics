@@ -5,6 +5,7 @@ namespace Devront\AdvancedStatistics\Commands;
 use Devront\AdvancedStatistics\AdvancedStatistics;
 use Devront\AdvancedStatistics\Statistics;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 use Nette\PhpGenerator\ClassType;
 use Nette\PhpGenerator\Printer;
 
@@ -34,7 +35,14 @@ class CreateIdeHelperFileCommand extends Command
 
             $params = $statistics_instance->getParams();
             foreach ($params as $param) {
-                $methodName = 'for' . ucfirst(\Illuminate\Support\Str::camel($param));
+                $methodName = 'for' . ucfirst(Str::camel($param));
+                $class->addComment("@method self $methodName() $methodName(\$value)");
+            }
+            $averages = $statistics_instance->getAverages();
+            foreach ($averages as $average) {
+                $methodName = 'getAverage' . ucfirst(Str::camel($average));
+                $class->addComment("@method float $methodName() $methodName(\$places)");
+                $methodName = Str::camel($average);
                 $class->addComment("@method self $methodName() $methodName(\$value)");
             }
 
