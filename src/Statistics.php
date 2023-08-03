@@ -63,9 +63,10 @@ class Statistics
     {
         // Avg
         foreach ($this->averages as $average) {
-            throw_unless(
-                isset($this->averages_values[$average]) && is_numeric($this->averages_values[$average]),
-                new \Exception($average . ' average must be set and numeric before hitting the stats.')
+            throw_if(
+                !array_key_exists($average, $this->averages_values)
+                || (!is_numeric($this->averages_values[$average]) && !is_null($this->averages_values[$average])),
+                new \Exception($average . ' average must be set and numeric or null before hitting the stats.')
             );
         }
 
@@ -92,6 +93,7 @@ class Statistics
             // Avg
             $payload = $stats->payload;
             foreach ($this->averages as $average) {
+                if (is_null($this->averages_values[$average])) continue;
                 if (!isset($payload['avg'])) $payload['avg'] = [];
                 $old_avg = $payload['avg'][$average] ?? 0;
                 $new_avg = (($old_avg * $old_items_count) + ($this->averages_values[$average] * $value)) / $new_items_count;
@@ -235,7 +237,7 @@ class Statistics
             if (in_array(Str::snake($method), $this->averages)) {
                 $avg_name = Str::snake($method);
                 $value = $params[0];
-                if (!is_numeric($value)) throw new \Exception('The value for Avg attributes must be numeric.');
+                if (!is_null($value) && !is_numeric($value)) throw new \Exception('The value for Avg attributes must be numeric.');
                 $this->averages_values[$avg_name] = $value;
                 return $this;
             } else if (Str::startsWith($method, 'for')) {

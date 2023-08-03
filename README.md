@@ -219,6 +219,16 @@ $average = (new OrderStatistics)
 
 *Note:* If your Statistic Class contains a ``#[Avg]`` value, you must always provide it before ``->hit()`` the stats.
 
+#### Passing ``null`` to an average param
+
+The average param (timeToFulfill in this example) can also be ``null``. If you pass null, then the average will remain
+unchanged. This can be useful if you want to count up the statistics but for some reason you have a very unrealistic
+value and don't want it to mess up your average stats.
+
+For example, you could have a very old test order that you forgot about. One day you decide to ship it just to get rid
+of it. Now the timeToFulfill will be very big and could destroy your average stats. So you could define a threshold and
+pass null as timeToFulfill if its exceeded.
+
 ### IDE Autocompletion of magic methods
 
 This package comes with a command to generate a _ide_helper_statistics.php file for better autocompletion when chaining

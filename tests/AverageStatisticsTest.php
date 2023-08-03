@@ -39,6 +39,36 @@ it('can hit and get average statistics', function () {
     expect($avg)->toBe(4.0);
 });
 
+it('does not mess up averages if null is passed', function () {
+    $model = app(Devront\AdvancedStatistics\AdvancedStatistics::class)->getModelClass();
+    $user1 = User::find(1);
+
+    $statistics = new OrderStatisticsWithAvg();
+    $statistics
+        ->for($user1)
+        ->forCountry('de')
+        ->timeToFulfill(2)
+        ->hit(3);
+
+    $statistics = new OrderStatisticsWithAvg();
+    $statistics
+        ->for($user1)
+        ->forCountry('de')
+        ->timeToFulfill(null)
+        ->hit(3);
+
+    $statistics = new OrderStatisticsWithAvg();
+    expect(
+        $statistics
+            ->for($user1)
+            ->forCountry('de')
+            ->getAverageTimeToFulfill()
+    )->toBe(2.0);
+
+    expect($model::query()->timeframe('d')->count())->toBe(1);
+
+});
+
 it('can accumulate daily statistics with averages on monthly statistics', function () {
     $user = User::first();
     $statistics = new OrderStatisticsWithAvg();
