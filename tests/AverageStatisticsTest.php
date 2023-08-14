@@ -113,9 +113,15 @@ it('can accumulate daily statistics with averages on monthly statistics', functi
     // Do accumulation
     $model::calculateMonthlyStatistics();
 
+    $statistics
+        ->for($user)
+        ->forCountry('fr')
+        ->timeToFulfill(5)
+        ->hit(2);
+
     // Should still have 1 db entry, but with 'm' timeframe
     expect($model::query()->timeframe('m')->count())->toBe(2);
-    expect($model::query()->timeframe('d')->count())->toBe(0);
+    expect($model::query()->timeframe('d')->count())->toBe(1);
 
     // Total for de should still be 3
     $statistics = new OrderStatisticsWithAvg();
@@ -126,14 +132,13 @@ it('can accumulate daily statistics with averages on monthly statistics', functi
 
     expect($res)->toBe(3.0);
 
-    // Total for all countries should still be 6
+    // Total for all countries should be 8
     $statistics = new OrderStatisticsWithAvg();
     $res = $statistics
         ->for($user)
-        ->forCountry('gb')
         ->get();
 
-    expect($res)->toBe(3.0);
+    expect($res)->toBe(8.0);
 
     $statistics = new OrderStatisticsWithAvg();
     expect(
@@ -141,5 +146,5 @@ it('can accumulate daily statistics with averages on monthly statistics', functi
             ->for($user)
             ->getAverageTimeToFulfill(1)
     )
-        ->toBe(2.5);
+        ->toBe(3.1);
 });
