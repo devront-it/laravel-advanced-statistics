@@ -154,8 +154,8 @@ class Statistics
         $select = [];
 
         foreach ($fields as $field) {
-            $groupBy[] = DB::raw("payload->'$.$field'");
-            $select[] = DB::raw("payload->'$.$field' as $field");
+            $groupBy[] = "payload->$field";
+            $select[] = "payload->$field as $field";
         }
         $select[] = DB::raw('SUM(value) as total_value');
 
