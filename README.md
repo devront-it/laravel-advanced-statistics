@@ -192,7 +192,7 @@ class OrderStatistics extends Statistics
 }
 ```
 
-Usage:
+**Usage:**
 
 ```php
 (new OrderStatistics)
@@ -228,6 +228,46 @@ value and don't want it to mess up your average stats.
 For example, you could have a very old test order that you forgot about. One day you decide to ship it just to get rid
 of it. Now the timeToFulfill will be very big and could destroy your average stats. So you could define a threshold and
 pass null as timeToFulfill if its exceeded.
+
+### top() Method
+
+The ``top()`` method offers a flexible and powerful way to retrieve the top records based on specified fields from the
+payload (your custom params). This functionality allows you to group and aggregate data either by a single field or a
+combination of multiple fields.
+
+**Usage:**
+
+Top 5 products grouped by a single field (sku):
+
+```php
+    // Get the top 5 best-selling products 
+    $top_selling_5_products = (new YourItemStats)
+                                    ->for($user)
+                                    // ... your other filters like from() and to()
+                                    ->top('sku', 5);
+
+    $top_selling_5_products->first()->sku;
+    $top_selling_5_products->first()->total_value;
+```
+
+Top 10 results grouped by multiple fields:
+
+```php
+    $top_results = (new YourCustomStats)
+                                    ->for($user)
+                                    // ... your other filters like from() and to()
+                                    ->top(['param1', 'param2'], 10);
+
+    $top_results->first()->param1;
+    $top_results->first()->param2;
+    $top_results->first()->total_value;
+```
+
+Return value:
+
+The method returns a collection of the top records, sorted in descending order based on their aggregated values over a
+specified period. Each entry in the result will include the fields defined in the ``fields`` parameter, alongside an
+aggregated ``total_value`` representing the computed metric for that group.
 
 ### IDE Autocompletion of magic methods
 
