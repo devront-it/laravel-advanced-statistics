@@ -8,6 +8,8 @@ use Devront\AdvancedStatistics\Tests\Attributes\OrderStatistics;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as Orchestra;
 
+// Run tests with ./vendor/bin/pest
+
 class TestCase extends Orchestra
 {
     protected function setUp(): void

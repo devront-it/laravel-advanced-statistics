@@ -9,6 +9,7 @@ use Devront\AdvancedStatistics\Models\Statistic;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Statistics
@@ -135,6 +136,43 @@ class Statistics
     public function getEntries(): Collection
     {
         return $this->baseQuery()->get();
+    }
+
+    /**
+     * @param $fields string|array params to group by
+     * @param $count int Number of results to return
+     * @return Collection Collection of items with total_value and the params grouped by
+     */
+    public function top(string|array $fields, int $count = 5): Collection
+    {
+        if (!is_array($fields)) {
+            $fields = [$fields];
+        }
+
+        // Construct the grouping and selecting logic
+        $groupBy = [];
+        $select = [];
+
+        foreach ($fields as $field) {
+            $groupBy[] = DB::raw("payload->'$.$field'");
+            $select[] = DB::raw("payload->'$.$field' as $field");
+        }
+        $select[] = DB::raw('SUM(value) as total_value');
+
+        $results = $this->baseQuery()
+            ->groupBy($groupBy)
+            ->select($select)
+            ->orderBy('total_value', 'desc')
+            ->limit($count)
+            ->get();
+
+        foreach ($results as $result) {
+            foreach ($fields as $field) {
+                $result->{$field} = trim($result->{$field}, '"');
+            }
+        }
+
+        return $results;
     }
 
     private function baseQuery()
