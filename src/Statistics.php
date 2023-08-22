@@ -178,6 +178,7 @@ class Statistics
     private function baseQuery()
     {
         $query = app(AdvancedStatistics::class)->getModelClass()::query()
+            ->where('type', $this->type)
             ->when($this->owner_type, fn($q) => $q->where('owner_type', $this->owner_type))
             ->when(!is_null($this->owner_id), function ($q) {
                 if (is_array($this->owner_id)) {
