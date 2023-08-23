@@ -20,11 +20,14 @@ return new class extends Migration {
                 $table->morphs('owner');
             }
 
-            $table->string('type');
+            $table->string('type')->index();
             $table->string('timeframe');
             $table->float('value', 10, 2)->default(0);
             $table->date('from_date');
             $table->date('to_date');
+
+            $table->index(['from_date', 'to_date']);
+
             $table->json('payload')->nullable();
 
             $table->timestamps();
