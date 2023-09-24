@@ -19,6 +19,10 @@ class CalculateStatisticsJob implements ShouldQueue
 
     public function handle()
     {
+        // Clean up orphaned entries
+        app(AdvancedStatistics::class)->getModelClass()::query()->whereDoesntHave('owner')->delete();
+
+        // Calculate
         app(AdvancedStatistics::class)->getModelClass()->calculateMonthlyStatistics();
     }
 }
