@@ -23,6 +23,6 @@ class CalculateStatisticsJob implements ShouldQueue
         app(AdvancedStatistics::class)->getModelClass()::query()->whereDoesntHave('owner')->delete();
 
         // Calculate
-        app(AdvancedStatistics::class)->getModelClass()->calculateMonthlyStatistics();
+        app(AdvancedStatistics::class)->getModelClass()::calculateMonthlyStatistics();
     }
 }
