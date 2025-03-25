@@ -144,6 +144,8 @@ class Statistic extends Model
                             'payload' => $stats->payload,
                             'value' => $stats_array->sum('value')
                         ]);
+                    } else {
+                        $monthly_stats->increment('value', $stats_array->sum('value'));
                     }
                 }
             }
