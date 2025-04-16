@@ -15,7 +15,6 @@ class StatisticsServiceProvider extends PackageServiceProvider
     {
         $package
             ->name('advanced-statistics')
-            ->hasViews()
             ->hasCommands(
                 AdvancedStatisticsRunCommand::class,
                 CreateIdeHelperFileCommand::class
